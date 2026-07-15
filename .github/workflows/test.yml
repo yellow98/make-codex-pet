@@ -1,0 +1,39 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python 3.12 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+    env:
+      PYTHONUTF8: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependency
+        run: python -X utf8 -m pip install Pillow==11.0.0
+
+      - name: Check Skill contract
+        run: python -X utf8 -m unittest discover -s skills/make-codex-pet/tests -p "test_skill_contract.py" -v
+
+      - name: Run test suite
+        run: python -X utf8 -m unittest discover -s skills/make-codex-pet/tests -v
