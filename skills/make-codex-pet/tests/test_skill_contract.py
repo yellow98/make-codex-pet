@@ -122,6 +122,22 @@ description: Use when a user wants to turn one or more reference photos or a cha
         )
         self.assertIn("No row or final-package confirmation gate is allowed.", self.skill)
 
+    def test_two_worker_queue_is_explicit_and_parent_owned(self) -> None:
+        for marker in (
+            "this Skill explicitly permits isolated row workers",
+            "Keep exactly two worker slots full",
+            "one explicit job ID",
+            "The parent is the only manifest writer",
+            "record each returned image immediately",
+            "refill the open slot",
+            "generate sequentially without asking the user to continue",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.skill)
+
+        self.assertIn("never edits the manifest", self.skill)
+        self.assertIn("never builds, validates, or installs", self.skill)
+
     def test_host_paths_runtime_and_command_quoting_are_explicit(self) -> None:
         self.assertIn("Define `<codex-home>`", self.skill)
         self.assertIn("`<codex-home>/pet-runs`", self.skill)

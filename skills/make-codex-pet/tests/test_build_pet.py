@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import tracemalloc
 import unittest
 from unittest import mock
 
@@ -158,6 +159,91 @@ class BuildPetTests(unittest.TestCase):
         result = build.remove_chroma(image, (0, 255, 0))
         self.assertEqual(result.getpixel((0, 0))[3], 0)
         self.assertEqual(result.getpixel((1, 0))[3], 255)
+
+    def test_remove_chroma_removes_edge_connected_green_gradient(self):
+        source = Image.new("RGBA", (9, 9))
+        for y in range(9):
+            for x in range(9):
+                source.putpixel((x, y), (90 + x * 8, 255, 90 + y * 8, 255))
+        for y in range(3, 6):
+            for x in range(3, 6):
+                source.putpixel((x, y), (120, 120, 120, 255))
+
+        result = build.remove_chroma(source, (0, 255, 0))
+
+        for y in range(9):
+            for x in range(9):
+                expected_alpha = 255 if 3 <= x < 6 and 3 <= y < 6 else 0
+                self.assertEqual(result.getpixel((x, y))[3], expected_alpha)
+
+    def test_remove_chroma_preserves_isolated_green_foreground(self):
+        source = Image.new("RGBA", (9, 9), (0, 255, 0, 255))
+        for y in range(2, 7):
+            for x in range(2, 7):
+                source.putpixel((x, y), (180, 40, 40, 255))
+        source.putpixel((4, 4), (0, 255, 0, 255))
+
+        result = build.remove_chroma(source, (0, 255, 0))
+
+        self.assertEqual(result.getpixel((0, 0))[3], 0)
+        self.assertEqual(result.getpixel((4, 4)), (0, 255, 0, 255))
+
+    def test_remove_chroma_fully_clears_connected_green_feather_band(self):
+        source = Image.new("RGBA", (3, 3), (30, 255, 30, 255))
+        source.putpixel((1, 1), (120, 120, 120, 255))
+
+        result = build.remove_chroma(source, (0, 255, 0))
+
+        self.assertEqual(result.getpixel((0, 0))[3], 0)
+        self.assertEqual(result.getpixel((1, 1))[3], 255)
+
+    def test_remove_tiny_components_drops_remote_noise(self):
+        cleanup = getattr(build, "remove_tiny_components", None)
+        self.assertIsNotNone(cleanup, "build_pet must expose remove_tiny_components")
+        source = Image.new("RGBA", (30, 30), (0, 0, 0, 0))
+        source.paste((120, 120, 120, 255), (10, 8, 20, 24))
+        source.putpixel((2, 2), (255, 0, 0, 255))
+        source.putpixel((3, 2), (255, 0, 0, 255))
+
+        result = cleanup(source)
+
+        self.assertEqual(result.getpixel((2, 2))[3], 0)
+        self.assertEqual(result.getpixel((15, 15))[3], 255)
+
+    def test_remove_tiny_components_keeps_meaningful_accessory(self):
+        cleanup = getattr(build, "remove_tiny_components", None)
+        self.assertIsNotNone(cleanup, "build_pet must expose remove_tiny_components")
+        source = Image.new("RGBA", (30, 30), (0, 0, 0, 0))
+        source.paste((120, 120, 120, 255), (10, 8, 20, 24))
+        source.paste((30, 30, 30, 255), (2, 2, 7, 7))
+
+        result = cleanup(source)
+
+        self.assertEqual(result.getpixel((4, 4))[3], 255)
+        self.assertEqual(result.getpixel((15, 15))[3], 255)
+
+    def test_remove_tiny_components_keeps_small_nearby_accessory(self):
+        source = Image.new("RGBA", (30, 30), (0, 0, 0, 0))
+        source.paste((120, 120, 120, 255), (10, 8, 20, 24))
+        source.paste((30, 30, 30, 255), (5, 10, 9, 14))
+
+        result = build.remove_tiny_components(source)
+
+        self.assertEqual(result.getpixel((6, 11))[3], 255)
+        self.assertEqual(result.getpixel((15, 15))[3], 255)
+
+    def test_remove_tiny_components_bounds_memory_for_large_character(self):
+        source = Image.new("RGBA", (256, 256), (120, 120, 120, 255))
+
+        tracemalloc.start()
+        try:
+            result = build.remove_tiny_components(source)
+            _, peak = tracemalloc.get_traced_memory()
+        finally:
+            tracemalloc.stop()
+
+        self.assertEqual(result.getchannel("A").getbbox(), (0, 0, 256, 256))
+        self.assertLess(peak, 4 * 1024 * 1024)
 
     def test_split_strip_uses_rounded_boundaries_and_rejects_empty_slots(self):
         strip = Image.new("RGB", (10, 1))

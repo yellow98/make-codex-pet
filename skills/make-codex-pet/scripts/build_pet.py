@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import deque
 from collections.abc import Mapping, Sequence
 from io import BytesIO
 import hashlib
@@ -79,15 +80,19 @@ def remove_chroma(
     tolerance: int = 36,
     feather: int = 24,
 ) -> Image.Image:
-    """Return an RGBA copy whose alpha falls off with RGB distance from key."""
+    """Remove edge-connected chroma while preserving isolated foreground colors."""
     tolerance = _byte_parameter("tolerance", tolerance)
     feather = _byte_parameter("feather", feather)
     key_red, key_green, key_blue = _rgb_key(key)
     source = image.convert("RGBA")
-    result = Image.new("RGBA", source.size, (0, 0, 0, 0))
     source_pixels = source.load()
-    result_pixels = result.load()
     feather_limit = tolerance + feather
+    width, height = source.size
+    candidates = bytearray(width * height)
+    dominant_index = max(range(3), key=lambda index: (key_red, key_green, key_blue)[index])
+    sorted_key = sorted((key_red, key_green, key_blue), reverse=True)
+    has_dominant_key = sorted_key[0] - sorted_key[1] >= 64
+
     for y in range(source.height):
         for x in range(source.width):
             red, green, blue, alpha = source_pixels[x, y]
@@ -96,13 +101,138 @@ def remove_chroma(
                 + (green - key_green) ** 2
                 + (blue - key_blue) ** 2
             )
-            if alpha == 0 or distance <= tolerance:
+            channels = (red, green, blue)
+            dominant = channels[dominant_index]
+            other_max = max(
+                channel for index, channel in enumerate(channels) if index != dominant_index
+            )
+            same_dominance = (
+                has_dominant_key and dominant >= 96 and dominant - other_max >= 24
+            )
+            if alpha == 0 or distance <= feather_limit or same_dominance:
+                candidates[y * width + x] = 1
+
+    queue: deque[tuple[int, int]] = deque()
+    visited = bytearray(width * height)
+
+    def enqueue(x: int, y: int) -> None:
+        index = y * width + x
+        if candidates[index] and not visited[index]:
+            visited[index] = 1
+            queue.append((x, y))
+
+    for x in range(width):
+        enqueue(x, 0)
+        if height > 1:
+            enqueue(x, height - 1)
+    for y in range(1, height - 1):
+        enqueue(0, y)
+        if width > 1:
+            enqueue(width - 1, y)
+
+    while queue:
+        x, y = queue.popleft()
+        for neighbor_y in range(max(0, y - 1), min(height, y + 2)):
+            for neighbor_x in range(max(0, x - 1), min(width, x + 2)):
+                if neighbor_x != x or neighbor_y != y:
+                    enqueue(neighbor_x, neighbor_y)
+
+    result = source.copy()
+    result_pixels = result.load()
+    for y in range(height):
+        for x in range(width):
+            red, green, blue, alpha = source_pixels[x, y]
+            if alpha == 0:
                 output_alpha = 0
-            elif feather and distance < feather_limit:
-                output_alpha = int(round(alpha * (distance - tolerance) / feather))
+            elif visited[y * width + x]:
+                distance = math.sqrt(
+                    (red - key_red) ** 2
+                    + (green - key_green) ** 2
+                    + (blue - key_blue) ** 2
+                )
+                channels = (red, green, blue)
+                dominant = channels[dominant_index]
+                other_max = max(
+                    channel
+                    for index, channel in enumerate(channels)
+                    if index != dominant_index
+                )
+                same_dominance = (
+                    has_dominant_key and dominant >= 96 and dominant - other_max >= 24
+                )
+                if (
+                    same_dominance
+                    or distance <= tolerance
+                    or distance >= feather_limit
+                    or not feather
+                ):
+                    output_alpha = 0
+                else:
+                    output_alpha = int(round(alpha * (distance - tolerance) / feather))
             else:
                 output_alpha = alpha
             result_pixels[x, y] = (red, green, blue, output_alpha)
+    return result
+
+
+def remove_tiny_components(image: Image.Image, max_pixels: int = 16) -> Image.Image:
+    """Remove isolated alpha components no larger than max_pixels, except the largest."""
+    if isinstance(max_pixels, bool) or not isinstance(max_pixels, int) or max_pixels < 0:
+        raise ValueError("max_pixels must be a nonnegative integer")
+    source = image.convert("RGBA")
+    width, height = source.size
+    alpha = source.getchannel("A")
+    alpha_pixels = alpha.load()
+    visited = bytearray(width * height)
+    result = source.copy()
+    result_pixels = result.load()
+    largest_size = 0
+    largest_small_component: list[int] | None = None
+
+    def erase(pixel_indices: Sequence[int]) -> None:
+        for pixel_index in pixel_indices:
+            x = pixel_index % width
+            y = pixel_index // width
+            red, green, blue, _ = result_pixels[x, y]
+            result_pixels[x, y] = (red, green, blue, 0)
+
+    for start_y in range(height):
+        for start_x in range(width):
+            start_index = start_y * width + start_x
+            if visited[start_index] or alpha_pixels[start_x, start_y] == 0:
+                continue
+            visited[start_index] = 1
+            queue: deque[int] = deque((start_index,))
+            component_size = 0
+            small_component: list[int] = []
+            while queue:
+                pixel_index = queue.popleft()
+                x = pixel_index % width
+                y = pixel_index // width
+                component_size += 1
+                if component_size <= max_pixels:
+                    small_component.append(pixel_index)
+                elif small_component:
+                    small_component.clear()
+                for neighbor_y in range(max(0, y - 2), min(height, y + 3)):
+                    for neighbor_x in range(max(0, x - 2), min(width, x + 3)):
+                        index = neighbor_y * width + neighbor_x
+                        if (
+                            not visited[index]
+                            and alpha_pixels[neighbor_x, neighbor_y] > 0
+                        ):
+                            visited[index] = 1
+                            queue.append(index)
+
+            if component_size > largest_size:
+                if largest_small_component is not None:
+                    erase(largest_small_component)
+                largest_size = component_size
+                largest_small_component = (
+                    small_component if component_size <= max_pixels else None
+                )
+            elif component_size <= max_pixels:
+                erase(small_component)
     return result
 
 
@@ -632,11 +762,13 @@ def build_pet(
             strip = _load_png(selected_run_dir, state, strip_path)
             extracted: list[Image.Image] = []
             for frame_index, frame in enumerate(split_strip(strip, frame_count)):
-                transparent = remove_chroma(
-                    frame,
-                    key,
-                    tolerance=tolerance,
-                    feather=feather,
+                transparent = remove_tiny_components(
+                    remove_chroma(
+                        frame,
+                        key,
+                        tolerance=tolerance,
+                        feather=feather,
+                    )
                 )
                 if _alpha_bbox(transparent) is None:
                     raise BuildError(
