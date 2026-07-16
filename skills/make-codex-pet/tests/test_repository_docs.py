@@ -163,6 +163,7 @@ class RepositoryDocsTests(unittest.TestCase):
         combined = read_project_file("README.md") + read_project_file("ACCEPTABLE_USE.md")
         for phrase in (
             "非官方 Q 版球星致敬形象",
+            "项目原创宠物资产的著作权",
             "不代表任何本人或相关组织背书",
             "公开形象权",
             "人格权",
