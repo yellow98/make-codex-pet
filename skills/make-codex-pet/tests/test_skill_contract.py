@@ -39,9 +39,24 @@ class SkillContractTests(unittest.TestCase):
     def test_frontmatter_is_exact(self) -> None:
         expected_frontmatter = """---
 name: make-codex-pet
-description: Use when a user wants to turn one or more reference photos or a character image into a local animated Codex pet, including Q-style, pixel, sticker, custom likeness, sprite-sheet repair, or pet installation requests.
+description: Use when a user wants to turn one or more reference photos or a character image into a local animated Codex pet, or install the bundled starter/classic pets, including Q-style, pixel, sticker, custom likeness, sprite-sheet repair, or pet installation requests.
 ---"""
         self.assertTrue(self.skill.startswith(expected_frontmatter))
+
+    def test_bundled_starter_install_has_a_short_non_imagegen_route(self) -> None:
+        starter_position = self.skill.find("## Install the bundled starter pets")
+        generation_position = self.skill.find("## Resolve inputs, paths, and runtime")
+        self.assertGreaterEqual(starter_position, 0)
+        self.assertLess(starter_position, generation_position)
+        for marker in (
+            "安装这个 Skill 自带的经典宠物",
+            '"<skill-dir>/scripts/install_starter_pets.py"',
+            "Do not call imagegen",
+            "Settings > Pets > Refresh",
+            "`/pet`",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, self.skill)
 
     def test_all_references_exist_and_skill_names_each_one(self) -> None:
         for name in REFERENCE_NAMES:

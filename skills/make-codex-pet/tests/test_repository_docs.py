@@ -75,6 +75,19 @@ class RepositoryDocsTests(unittest.TestCase):
         ):
             self.assertIn(phrase, readme)
 
+    def test_readme_documents_one_sentence_starter_install(self) -> None:
+        readme = read_project_file("README.md")
+        for phrase in (
+            "安装这个 Skill 自带的经典宠物",
+            "梅西 Q版",
+            "C罗 Q版",
+            "马斯克 Q版",
+            "山姆·奥特曼 Q版",
+            "Settings > Pets > Refresh",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, readme)
+
     def test_readme_documents_data_flow_rights_compatibility_and_contributing(self) -> None:
         readme = read_project_file("README.md")
         for phrase in (
@@ -145,6 +158,19 @@ class RepositoryDocsTests(unittest.TestCase):
         ):
             self.assertIn(phrase, acceptable)
         self.assertNotRegex(acceptable, r"必须.{0,12}(确认|勾选|同意).{0,30}(才|方可)")
+
+    def test_bundled_public_figures_have_no_endorsement_or_rights_grant(self) -> None:
+        combined = read_project_file("README.md") + read_project_file("ACCEPTABLE_USE.md")
+        for phrase in (
+            "非官方 Q 版同人形象",
+            "不代表本人或相关组织背书",
+            "公开形象权",
+            "人格权",
+            "赞助关系",
+            "商业使用权",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, combined)
 
     def test_license_is_apache_2_full_text(self) -> None:
         license_text = read_project_file("LICENSE")

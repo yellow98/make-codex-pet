@@ -1,11 +1,23 @@
 ---
 name: make-codex-pet
-description: Use when a user wants to turn one or more reference photos or a character image into a local animated Codex pet, including Q-style, pixel, sticker, custom likeness, sprite-sheet repair, or pet installation requests.
+description: Use when a user wants to turn one or more reference photos or a character image into a local animated Codex pet, or install the bundled starter/classic pets, including Q-style, pixel, sticker, custom likeness, sprite-sheet repair, or pet installation requests.
 ---
 
 # Make Codex Pet
 
 Turn attached references into the official nine-row Codex sprite atlas, validate it, and install it only as a local Codex pet. A request as short as “把这几张照片做成一个 Q 版桌宠” plus the images is sufficient.
+
+## Install the bundled starter pets
+
+When the user asks “安装这个 Skill 自带的经典宠物” or otherwise clearly asks for the bundled, starter, or classic pet pack, take this short branch and then stop. Do not call imagegen, do not ask for reference images, and do not enter the generation workflow.
+
+Resolve `<skill-dir>`, `<codex-home>`, and `<python>` using the rules in the next section, then run:
+
+```text
+"<python>" "<skill-dir>/scripts/install_starter_pets.py"
+```
+
+Parse stdout JSON. On success, report which pets were installed or unchanged, then tell the user to open **Settings > Pets > Refresh**, choose one of the four pets, and enter `/pet`. If bundled assets are missing or invalid, report the error and suggest reinstalling or updating the Skill; do not fall back to generating replacements.
 
 ## Resolve inputs, paths, and runtime
 

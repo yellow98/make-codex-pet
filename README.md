@@ -10,6 +10,12 @@
 
 普通用户不需要另行安装 Python、Node 或 ImageMagick，也不需要填写 API Key。运行依赖 Codex Desktop 已有的 Pets、imagegen，以及 Codex 随附的 bundled Python/Pillow；若这些能力缺失，请先更新 Codex。仓库根目录的 `pyproject.toml` 仅供贡献者和 CI 描述测试环境，不是最终用户的安装入口。
 
+安装 Skill 后，如需一次装入仓库自带的四个经典宠物，在 Codex 中直接说：
+
+> 安装这个 Skill 自带的经典宠物
+
+Skill 会把梅西 Q版、C罗 Q版、马斯克 Q版和山姆·奥特曼 Q版安装到当前用户的 Codex Pets 目录；这一步不调用 imagegen。完成后打开 **Settings > Pets > Refresh**，选择角色，再输入 `/pet` 唤起。
+
 ## 使用方式
 
 在 Codex Desktop 中附上一个或多个参考图，然后直接说：
@@ -62,6 +68,8 @@ Skill 单包支持这四种风格，不为不同系统拆分安装包。
 
 用户负责确保自己对照片、人物肖像、标志及其他输入拥有必要权利或许可，并对生成结果的后续发布、分享和商业使用自行负责。明星或其他公众人物并不构成例外。
 
+仓库自带的经典宠物是非官方 Q 版同人形象，仅用于演示 Skill 的本地 Pets 能力，不代表本人或相关组织背书，也不构成赞助关系。Apache License 2.0 只覆盖仓库代码和文档，不授予所描绘人物的公开形象权、人格权、姓名或肖像相关权利、第三方商标权或商业使用权。
+
 维护者不审查每一次输入或输出，不授权任何人物、照片或商标的使用，也不背书任何具体结果，更不代表相关人物、权利人或 OpenAI 作出背书。本说明与 [ACCEPTABLE_USE.md](ACCEPTABLE_USE.md) 均为项目边界说明，非法律意见；适用法律下的责任范围应由具体事实与法律确定，本文不保证其可被完全排除。OpenAI 服务政策仍适用。
 
 这些说明不是强制确认步骤，也不是 Skill 的运行硬拦截。使用者需要自行作出权利判断。
@@ -100,8 +108,9 @@ make-codex-pet/
 ├── skills/make-codex-pet/
 │   ├── SKILL.md              # Codex 编排合同
 │   ├── agents/               # 可选的行生成工作者合同
+│   ├── assets/starter-pets/  # 可选安装的四个经典宠物
 │   ├── references/           # Pets、图像与隐私参考
-│   ├── scripts/              # prepare/build/validate/install/cleanup
+│   ├── scripts/              # prepare/build/validate/install/cleanup/starter install
 │   └── tests/                # unittest 合同与脚本测试
 ├── .github/workflows/test.yml
 ├── ACCEPTABLE_USE.md
