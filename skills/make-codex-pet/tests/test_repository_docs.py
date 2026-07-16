@@ -79,10 +79,10 @@ class RepositoryDocsTests(unittest.TestCase):
         readme = read_project_file("README.md")
         for phrase in (
             "安装这个 Skill 自带的经典宠物",
-            "梅西 Q版",
-            "C罗 Q版",
-            "马斯克 Q版",
-            "山姆·奥特曼 Q版",
+            "阿根廷10号",
+            "葡萄牙7号",
+            "挪威9号",
+            "法国10号",
             "Settings > Pets > Refresh",
         ):
             with self.subTest(phrase=phrase):
@@ -162,8 +162,8 @@ class RepositoryDocsTests(unittest.TestCase):
     def test_bundled_public_figures_have_no_endorsement_or_rights_grant(self) -> None:
         combined = read_project_file("README.md") + read_project_file("ACCEPTABLE_USE.md")
         for phrase in (
-            "非官方 Q 版同人形象",
-            "不代表本人或相关组织背书",
+            "非官方 Q 版球星致敬形象",
+            "不代表任何本人或相关组织背书",
             "公开形象权",
             "人格权",
             "赞助关系",

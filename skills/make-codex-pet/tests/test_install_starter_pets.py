@@ -18,10 +18,10 @@ SKILL_DIR = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = SKILL_DIR / "scripts"
 INSTALLER = SCRIPTS_DIR / "install_starter_pets.py"
 PET_IDS = (
-    "classic-messi",
-    "classic-ronaldo",
-    "classic-elon-musk",
-    "classic-sam-altman",
+    "classic-argentina-10",
+    "classic-portugal-7",
+    "classic-norway-9",
+    "classic-france-10",
 )
 ANIMATION_ROWS = (6, 8, 8, 4, 5, 8, 6, 6, 6)
 
@@ -109,18 +109,18 @@ class InstallStarterPetsTests(unittest.TestCase):
         self.assertEqual(second["installed"], [])
         self.assertEqual(second["unchanged"], list(PET_IDS))
 
-        self.write_package("classic-messi", "Updated bundled pet.")
+        self.write_package("classic-argentina-10", "Updated bundled pet.")
         third = installer.install_starter_pets(self.codex_home, self.assets_root)
-        self.assertEqual(third["installed"], ["classic-messi"])
+        self.assertEqual(third["installed"], ["classic-argentina-10"])
         self.assertEqual(third["unchanged"], list(PET_IDS[1:]))
         installed = json.loads(
-            (self.codex_home / "pets" / "classic-messi" / "pet.json").read_text(encoding="utf-8")
+            (self.codex_home / "pets" / "classic-argentina-10" / "pet.json").read_text(encoding="utf-8")
         )
         self.assertEqual(installed["description"], "Updated bundled pet.")
 
     def test_rejects_invalid_or_incomplete_asset_package(self):
         installer = load_installer()
-        (self.assets_root / "classic-messi" / "extra.txt").write_text("extra", encoding="utf-8")
+        (self.assets_root / "classic-argentina-10" / "extra.txt").write_text("extra", encoding="utf-8")
 
         with self.assertRaisesRegex(ValueError, "exactly"):
             installer.install_starter_pets(self.codex_home, self.assets_root)

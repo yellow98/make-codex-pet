@@ -2,7 +2,7 @@
 
 ## Goal
 
-Bundle four ready-to-use Q-style Codex pets inspired by Lionel Messi, Cristiano Ronaldo, Elon Musk, and Sam Altman with `make-codex-pet`, then let a user install all four locally with one natural-language request after installing the Skill.
+Bundle four ready-to-use original-face Q-style football tribute pets with `make-codex-pet`, then let a user install all four locally with one natural-language request after installing the Skill.
 
 ## Product boundary
 
@@ -32,10 +32,10 @@ The first pack contains exactly four pets:
 
 | Package ID | Display name | Recognizable design direction |
 |---|---|---|
-| `classic-messi` | 梅西 Q版 | Short dark hair, trimmed beard, compact athletic build, sky-blue-and-white football palette, number 10 without team crests. |
-| `classic-ronaldo` | C罗 Q版 | Styled dark hair, clean athletic silhouette, red-and-green football palette, number 7 without team crests. |
-| `classic-elon-musk` | 马斯克 Q版 | Short swept hair, dark minimalist jacket or T-shirt, technology and space-exploration character cues without company logos. |
-| `classic-sam-altman` | 山姆·奥特曼 Q版 | Short dark hair, understated gray hoodie or casual jacket, calm technology-founder character cues without company logos. |
+| `classic-argentina-10` | 阿根廷10号 | Original face, short dark hair, trimmed beard, compact athletic build, sky-blue-and-white football palette, number 10 without team crests. |
+| `classic-portugal-7` | 葡萄牙7号 | Original face, styled dark hair, clean athletic silhouette, red-and-green football palette, number 7 without team crests. |
+| `classic-norway-9` | 挪威9号 | Original face, long pale-blond hair, powerful striker silhouette, red-and-navy football palette, number 9 without team crests. |
+| `classic-france-10` | 法国10号 | Original face, close-cropped black hair, compact forward silhouette, blue football palette with red-white trim, number 10 without team crests. |
 
 Each package contains exactly `pet.json` and `spritesheet.png`. Each sprite sheet uses the existing official 1536×1872, 8×9, nine-state Codex atlas contract. The four pets differ in identity and styling while retaining the same official action semantics.
 
@@ -53,12 +53,12 @@ Avoid official club, national-team, corporate, or product logos. Names and liken
 skills/make-codex-pet/
 ├── assets/
 │   └── starter-pets/
-│       ├── classic-messi/
+│       ├── classic-argentina-10/
 │       │   ├── pet.json
 │       │   └── spritesheet.png
-│       ├── classic-ronaldo/
-│       ├── classic-elon-musk/
-│       └── classic-sam-altman/
+│       ├── classic-portugal-7/
+│       ├── classic-norway-9/
+│       └── classic-france-10/
 ├── scripts/
 │   └── install_starter_pets.py
 └── tests/

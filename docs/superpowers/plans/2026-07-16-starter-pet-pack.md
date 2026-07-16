@@ -36,10 +36,10 @@ Implement these stable entry points:
 
 ```python
 STARTER_PET_IDS = (
-    "classic-messi",
-    "classic-ronaldo",
-    "classic-elon-musk",
-    "classic-sam-altman",
+    "classic-argentina-10",
+    "classic-portugal-7",
+    "classic-norway-9",
+    "classic-france-10",
 )
 
 def install_starter_pets(
@@ -94,7 +94,7 @@ Run the commands from Step 2. Expected: PASS.
 
 - [ ] **Step 1: Read the imagegen Skill and prepare four pet runs**
 
-Create independent Q-cartoon run manifests for Messi, Ronaldo, Elon Musk, and Sam Altman using the recognizable directions in the approved design. Use no official logos and do not commit reference photographs.
+Create independent Q-cartoon run manifests for Argentina Number 10, Portugal Number 7, Norway Number 9, and France Number 10 using the approved original-face designs. Use no official logos and do not commit reference photographs.
 
 - [ ] **Step 2: Generate four base previews**
 
@@ -107,8 +107,8 @@ Treat `可以` as approval for all four bases. If the user requests changes, reg
 ### Task 4: Build the four complete starter pets
 
 **Files:**
-- Create: `skills/make-codex-pet/assets/starter-pets/classic-messi/pet.json`
-- Create: `skills/make-codex-pet/assets/starter-pets/classic-messi/spritesheet.png`
+- Create: `skills/make-codex-pet/assets/starter-pets/classic-argentina-10/pet.json`
+- Create: `skills/make-codex-pet/assets/starter-pets/classic-argentina-10/spritesheet.png`
 - Create: equivalent two-file packages for the other three declared IDs.
 - Create: `skills/make-codex-pet/tests/test_starter_pet_assets.py`
 

@@ -15,10 +15,10 @@ import validate_pet
 
 
 STARTER_PET_IDS = (
-    "classic-messi",
-    "classic-ronaldo",
-    "classic-elon-musk",
-    "classic-sam-altman",
+    "classic-argentina-10",
+    "classic-portugal-7",
+    "classic-norway-9",
+    "classic-france-10",
 )
 PET_JSON_FIELDS = {"id", "displayName", "description", "spritesheetPath"}
 
