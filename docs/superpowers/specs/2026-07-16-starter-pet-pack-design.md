@@ -18,6 +18,14 @@ The supported user flow is:
 
 No separate Python, Node, ImageMagick, API key, shell knowledge, or manual file copy is required.
 
+## Cross-platform implementation rule
+
+All runtime code shipped by this Skill must be platform-neutral. Prefer Codex's bundled Python and the Python standard library, including `pathlib`, `json`, `hashlib`, `shutil`, `tempfile`, and `os`, with host-native paths resolved at runtime.
+
+Do not ship separate `.bat`, PowerShell, Bash, WPF, AppleScript, or platform-specific installer implementations. Do not hard-code Windows drive letters, `%LOCALAPPDATA%`, macOS home paths, or Linux home paths. Resolve `CODEX_HOME` when set and otherwise use the current user's `.codex` directory.
+
+The same installer code and bundled `pet.json`/`spritesheet.png` packages must work on supported Windows, macOS, and Linux Codex surfaces that provide Pets and the bundled Python/Pillow runtime. Platform/version availability of Codex Pets remains a product prerequisite rather than something this repository installs.
+
 ## Bundled pets
 
 The first pack contains exactly four pets:
@@ -99,6 +107,7 @@ Automated tests cover:
 - A newly installed Skill can install all four bundled pets after one natural-language request.
 - No image-generation call occurs during starter-pack installation.
 - The user installs no additional runtime and performs no manual file copy.
+- One Python implementation handles supported Windows, macOS, and Linux paths without shell-specific scripts.
 - All four pets appear after **Settings > Pets > Refresh**.
 - Existing custom or built-in pets remain unchanged.
 - The existing photo-to-pet workflow and 148-test baseline remain intact.
